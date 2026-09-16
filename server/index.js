@@ -49,6 +49,36 @@ app.use(express.urlencoded({ extended: true }));
 // 具体策略见 config.js 里的 corsOptions()。
 app.use(cors(corsOptions()));
 
+// ---- 安全响应头 ----
+// 为什么手动加这几行、而不是装 helmet？
+//   1) helmet 默认开的东西太多（CSP 默认策略会挡住内联脚本），
+//      对这个项目来说是过度配置，反而要一条条关掉；
+//   2) 我们只需要 4 个头，手写清楚每一条在防什么，比读 helmet 文档省事。
+//
+// 注意 X-Frame-Options 用 SAMEORIGIN 而不是 DENY：
+// 以后若要嵌入自己的页面（比如做个 iframe 预览）还能用。
+app.use((req, res, next) => {
+  // 禁止浏览器"猜"Content-Type。不加这条的话，一个上传的 .txt
+  // 可能被猜成 HTML 然后当脚本执行（MIME sniffing 攻击）。
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+
+  // 禁止被别家网站用 iframe 嵌套 —— 防点击劫持
+  // （把你的登录页套在恶意页面的透明层下面，骗用户点）
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+
+  // 跨站跳转时不要带上完整 URL 作为 Referer，
+  // 避免把聊天室地址、房间 id 这类信息泄露给第三方站点
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+  // 明确告诉浏览器：这个站的资源只走 HTTPS（对本地 http 访问无影响）
+  // max-age 先设 6 小时而不是一年 —— 万一将来要回退成 HTTP，不至于把自己锁死
+  if (IS_CLOUD) {
+    res.setHeader('Strict-Transport-Security', 'max-age=21600');
+  }
+
+  next();
+});
+
 // 简单的请求日志，方便调试时看清谁在调什么接口
 app.use((req, res, next) => {
   const time = new Date().toLocaleTimeString('zh-CN');
@@ -125,6 +155,7 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`  聊天室后端已启动 [${mode}模式]`);
   console.log(`  端口: ${PORT}`);
   console.log(`  CORS: ${corsDesc}`);
+  console.log(`  安全头: nosniff / SAMEORIGIN / Referrer-Policy${IS_CLOUD ? ' / HSTS' : ''}`);
   console.log(`  健康检查: /api/health`);
   console.log('========================================');
   console.log('');

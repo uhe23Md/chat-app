@@ -11,6 +11,8 @@
     "test": "node test-auth.js && node test-socket.js",
     "test:deploy": "node .verify/verify-deploy.cjs",
     "test:tunnel": "node deploy/verify-tunnel.cjs",
+    "test:soak": "node deploy/soak-tunnel.cjs",
+    "test:visit": "node deploy/check-first-visit.cjs",
     "test:launcher": "node deploy/test-launcher.cjs && node deploy/run-cmd.cjs deploy/test-cmd-parse.bat",
     "test:browser": "node .verify/verify-stage5.cjs && node .verify/verify-stage6.cjs",
     "test:all": "npm test && npm run test:deploy && npm run test:launcher",
