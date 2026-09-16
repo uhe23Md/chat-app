@@ -172,25 +172,43 @@ console.log(`${C.dim('[4/5]')} 测试连接...`);
 if (repoUrl.startsWith('git@')) {
   const sshTest = capture('ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -T git@github.com 2>&1');
 
-  if (sshTest.includes('successfully authenticated') || sshTest.includes('Hi ')) {
+  // GitHub 认证成功的标准返回：
+  //   Hi <用户名>! You've successfully authenticated, but GitHub does not provide shell access.
+  // 注意这段文字输出在 stderr 上、且退出码是 1（GitHub 不提供 shell 访问），
+  // 所以不能用退出码判断，只能匹配文字。
+  const authed =
+    sshTest.includes('successfully authenticated') ||
+    /^Hi [^!]+!/m.test(sshTest);
+
+  if (authed) {
     const who = (sshTest.match(/Hi ([^!]+)!/) || [])[1] || '未知用户';
     console.log(`      ${C.green('✓')} SSH 认证成功，账号：${C.cyan(who)}`);
   } else if (sshTest.includes('Permission denied')) {
     fail(
       'SSH 公钥还没加到 GitHub 上',
-      `1. 复制公钥内容：\n` +
+      `你需要先用浏览器加一次公钥（只需一次，以后永久有效）：\n\n` +
+        `1. 看一眼公钥内容：\n` +
         `     ${C.dim('type %USERPROFILE%\\.ssh\\id_ed25519.pub')}\n` +
-        `   （或在文件管理器打开 C:\\Users\\${process.env.USERNAME}\\.ssh\\ ，用记事本打开 id_ed25519.pub）\n\n` +
-        `2. 打开 https://github.com/settings/keys\n` +
-        `3. 点 New SSH key，Title 随便填，Key 里粘贴公钥全文\n` +
-        `4. 点 Add SSH key，然后重新运行本脚本`
+        `   （或打开文件管理器，地址栏输入 %USERPROFILE%\\.ssh ，用记事本打开 id_ed25519.pub）\n\n` +
+        `2. 打开 ${C.cyan('https://github.com/settings/keys')}\n` +
+        `3. 点 ${C.cyan('New SSH key')}，Title 随便填（如 chat-app）\n` +
+        `4. Key 输入框里粘贴公钥全文（一字不差，别加多余空格）\n` +
+        `5. 点 ${C.cyan('Add SSH key')}\n` +
+        `6. 回来重新运行本脚本`
     );
   } else {
     console.log(`      ${C.yellow('⚠')} SSH 测试返回了意外结果，继续尝试推送：`);
     console.log(`        ${C.dim(sshTest.slice(0, 200))}`);
   }
 } else {
-  console.log(`      ${C.dim('HTTPS 地址，跳过 SSH 测试（推送时可能需要输入 token）')}`);
+  console.log(`      ${C.dim('HTTPS 地址，跳过 SSH 测试')}`);
+
+  // 用 HTTPS 地址时，本地没有存过凭据的话会卡在「输入用户名密码」不动。
+  // 提前提醒，避免用户以为程序卡死了。
+  console.log(
+    `      ${C.yellow('提示')}：HTTPS 方式会要求输入用户名和 token，\n` +
+      `             建议改用 SSH 地址（git@github.com:...）省掉这一步。`
+  );
 }
 
 // ============================================================
