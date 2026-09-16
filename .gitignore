@@ -17,6 +17,9 @@ node_modules/
 *.sqlite
 *.sqlite3
 
+# 部署密钥（临时文件，不进仓库）
+.deploy-secret.txt
+
 # 日志
 *.log
 npm-debug.log*
