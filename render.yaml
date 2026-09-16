@@ -28,10 +28,20 @@ services:
     healthCheckPath: /api/health
     autoDeploy: true         # 推代码到 main 分支自动重新部署
     envVars:
-      # node:sqlite 是实验性特性，Node 22.5+ 才有。
-      # 这里锁 22 的较新版本，别让 Render 用 18/20 跑。
+      # 锁定 Node 版本。
+      #
+      # 【为什么必须锁】本项目用了 Node 内置的 `node:sqlite`，
+      # 这个模块要 Node >= 22.5 才有。虽然 Render 现在的默认版本是 24.x
+      # （2026-04-21 起），但"默认版本"会随时间变、且对老服务不生效。
+      # 显式锁住最稳。
+      #
+      # 选 24 而不是 22 的原因：保持和本地开发环境一致（本机是 v24.21.0）。
+      # 本地/线上同版本，能避免"本地能跑、线上报错"这类最难查的问题。
+      #
+      # 优先级：NODE_VERSION 环境变量 > .node-version 文件 > package.json 的 engines
+      # （package.json 里也写了 ">=22.5.0" 作为兜底）
       - key: NODE_VERSION
-        value: "22.11.0"
+        value: "24.14.1"
 
       # 让 config.js 判定为"线上环境"，自动收紧 CORS
       - key: NODE_ENV

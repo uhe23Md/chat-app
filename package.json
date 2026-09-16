@@ -9,6 +9,9 @@
     "test:auth": "node test-auth.js",
     "test:socket": "node test-socket.js",
     "test": "node test-auth.js && node test-socket.js",
+    "test:deploy": "node .verify/verify-deploy.cjs",
+    "test:browser": "node .verify/verify-stage5.cjs && node .verify/verify-stage6.cjs",
+    "test:all": "npm test && npm run test:deploy",
     "clean:test": "node test-cleanup.js"
   },
   "keywords": [
