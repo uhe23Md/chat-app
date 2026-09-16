@@ -10,8 +10,12 @@
     "test:socket": "node test-socket.js",
     "test": "node test-auth.js && node test-socket.js",
     "test:deploy": "node .verify/verify-deploy.cjs",
+    "test:tunnel": "node deploy/verify-tunnel.cjs",
+    "test:launcher": "node deploy/test-launcher.cjs && node deploy/run-cmd.cjs deploy/test-cmd-parse.bat",
     "test:browser": "node .verify/verify-stage5.cjs && node .verify/verify-stage6.cjs",
-    "test:all": "npm test && npm run test:deploy",
+    "test:all": "npm test && npm run test:deploy && npm run test:launcher",
+    "security": "node deploy/security-scan.cjs",
+    "tunnel": "cloudflared tunnel --url http://localhost:3000",
     "clean:test": "node test-cleanup.js"
   },
   "keywords": [

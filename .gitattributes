@@ -1,0 +1,43 @@
+# ============================================================
+# .gitattributes —— 锁定文件的行尾格式
+#
+# 为什么需要这个？
+#
+# 1) Windows 批处理（.cmd / .bat）**必须**是 CRLF。
+#    用 LF 的话，cmd.exe 解析 goto / if / for 这些控制流会出错，
+#    典型症状是"脚本跑到一半莫名结束"或"标签找不到"。
+#    如果依赖 git 的自动转换（core.autocrlf），不同机器 clone 下来
+#    可能是 LF，脚本就坏了。所以这里显式锁定。
+#
+# 2) 反过来，.cjs / .js / .json 这些用 LF 更规范，
+#    统一成 LF 可以避免"全文件都变了"的假 diff。
+# ============================================================
+
+# ---- Windows 批处理：强制 CRLF，且不要做任何转换 ----
+*.cmd  text eol=crlf
+*.bat  text eol=crlf
+
+# ---- 源码：统一 LF ----
+*.js   text eol=lf
+*.cjs  text eol=lf
+*.mjs  text eol=lf
+*.json text eol=lf
+*.css  text eol=lf
+*.html text eol=lf
+*.md   text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+
+# ---- 二进制：禁止 git 碰它 ----
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
+*.zip  binary
+
+# ---- 数据库：即使误加也不该被当文本处理 ----
+*.db       binary
+*.db-shm   binary
+*.db-wal   binary
