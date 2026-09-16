@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <!-- viewport-fit=cover：让页面延伸到 iPhone 刘海/圆角区域，配合 CSS 里的
+       env(safe-area-inset-bottom) 使用，否则底部输入框会被横条盖住 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>聊天大厅 · 实时聊天室</title>
+  <link rel="icon" type="image/png" href="/img/logo.png">
+  <link rel="apple-touch-icon" href="/img/logo.png">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="chat-page">
+
+  <!-- ==================== 顶栏 ==================== -->
+  <header class="chat-header">
+    <!-- 左侧：移动端的房间抽屉开关 + 品牌 -->
+    <div class="brand">
+      <button class="sidebar-toggle" id="sidebarToggle" type="button" title="房间列表" aria-label="房间列表">☰</button>
+      <img class="brand-icon" src="/img/logo.png" alt="Logo" width="30" height="30">
+      <span class="brand-text">实时聊天室</span>
+    </div>
+
+    <!-- 右侧：连接状态 + 在线面板开关 + 当前用户 -->
+    <div class="header-right">
+      <div class="conn-status" id="connStatus">
+        <span class="conn-dot"></span>
+        <span id="connText">连接中…</span>
+      </div>
+
+      <button class="sidebar-toggle" id="onlineToggle" type="button" title="在线用户" aria-label="在线用户">👥</button>
+
+      <div class="user-chip">
+        <div class="avatar" id="myAvatar">?</div>
+        <span class="chip-name" id="myName">加载中</span>
+      </div>
+
+      <!-- 退出登录。故意做成普通按钮而不是 <a>，
+           因为退出逻辑要先清 localStorage 再跳转 -->
+      <button class="sidebar-toggle" id="logoutBtn" type="button" title="退出登录" aria-label="退出登录">⏻</button>
+    </div>
+  </header>
+
+  <!-- ==================== 主体三栏 ==================== -->
+  <div class="chat-body">
+
+    <!-- ---------- 左栏：房间列表 ---------- -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-title">房间</div>
+      <div class="room-list" id="roomList">
+        <!-- 房间项由 chat.js 动态渲染。
+             这里放个占位提示，等数据到了会被替换掉 -->
+        <div class="empty-state" style="padding: 20px 0; font-size: 12px;">加载中…</div>
+      </div>
+    </aside>
+
+    <!-- ---------- 中栏：消息区 ---------- -->
+    <main class="main">
+      <!-- 房间标题栏。
+           .room-header 自带 flex + 居中 + 字体，.count 是它的直接子元素才有样式，
+           所以这里不要再套一层 div 包装。 -->
+      <div class="room-header">
+        <span class="hash">#</span>
+        <span id="roomName">请选择房间</span>
+        <span class="count" id="roomCount"></span>
+      </div>
+
+      <!-- 消息滚动区 -->
+      <div class="messages scroll-thin" id="messages">
+        <div class="empty-state" id="messagesEmpty">
+          <span class="icon">💬</span>
+          还没有消息，说点什么吧
+        </div>
+      </div>
+
+      <!-- 底部输入区 -->
+      <div class="composer">
+        <div class="composer-row">
+          <textarea
+            id="messageInput"
+            rows="1"
+            maxlength="2000"
+            placeholder="输入消息，按 Enter 发送（Shift + Enter 换行）"
+            aria-label="消息输入框"
+          ></textarea>
+          <button class="btn btn-primary send-btn" id="sendBtn" type="button" title="发送">➤</button>
+        </div>
+        <!-- 提示行：字数统计 / 错误提示都显示在这里 -->
+        <div class="composer-hint" id="composerHint"></div>
+      </div>
+    </main>
+
+    <!-- ---------- 右栏：在线用户 ---------- -->
+    <aside class="online-panel" id="onlinePanel">
+      <div class="sidebar-title">在线用户 <span id="onlineCount"></span></div>
+      <div class="online-list" id="onlineList">
+        <div class="empty-state" style="padding: 20px 0; font-size: 12px;">加载中…</div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- 移动端抽屉打开时的遮罩，点它关闭抽屉 -->
+  <div class="drawer-mask" id="drawerMask"></div>
+
+  <!-- ==================== 私聊弹窗 ==================== -->
+  <div class="modal-mask" id="pmModal">
+    <div class="modal">
+      <!-- 弹窗头：对方信息 + 关闭按钮 -->
+      <div class="modal-header">
+        <div class="modal-title">
+          <div class="avatar" id="pmAvatar">?</div>
+          <span id="pmTitle">私聊</span>
+        </div>
+        <button class="modal-close" id="pmClose" type="button" title="关闭" aria-label="关闭">✕</button>
+      </div>
+
+      <div class="messages scroll-thin" id="pmMessages">
+        <div class="empty-state">
+          <span class="icon">✉️</span>
+          还没有聊天记录
+        </div>
+      </div>
+
+      <div class="composer">
+        <div class="composer-row">
+          <textarea
+            id="pmInput"
+            rows="1"
+            maxlength="2000"
+            placeholder="输入私聊内容，按 Enter 发送"
+            aria-label="私聊输入框"
+          ></textarea>
+          <button class="btn btn-primary send-btn" id="pmSendBtn" type="button" title="发送">➤</button>
+        </div>
+        <div class="composer-hint" id="pmHint"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Socket.IO 客户端库：由服务端自动托管，路径固定为 /socket.io/socket.io.js -->
+  <script src="/socket.io/socket.io.js"></script>
+  <!-- 请求封装（登录态、REST 调用） -->
+  <script src="/js/api.js"></script>
+  <!-- 聊天页逻辑 -->
+  <script src="/js/chat.js"></script>
+
+</body>
+</html>

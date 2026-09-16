@@ -1,0 +1,82 @@
+# ============================================================
+# Render 部署蓝图（Infrastructure as Code）
+#
+# 用法：把这个文件推到 GitHub 仓库根目录，然后在 Render 里选
+#       "New +" → "Blueprint" → 选你的仓库，Render 会自动读取本文件建服务。
+#
+# 也可以不用这个文件，在 Render 网页上手动填（见《部署指南.md》）。
+# 用蓝图的区别是：配置进了版本库，重建服务时不用重新回忆各字段。
+#
+# ⚠️ 关于免费套餐的数据库持久化：
+#    free 套餐**不支持挂载磁盘**（disks 只对企业版/付费实例开放）。
+#    所以这里没配 disk，意味着每次重新部署，chat.db 都会被重置。
+#    对演示够用，但别把重要数据放上去。
+#    要持久化，两条路：
+#      a) 升级到付费实例 + 加 disks 配置（下面注释里留了模板）
+#      b) 换 Postgres（要改 db.js 和 queries.js，工作量大）
+# ============================================================
+
+services:
+  - type: web
+    name: chat-app
+    runtime: node
+    plan: free
+    region: singapore        # 离国内最近，延迟低。可选 oregon / ohio / frankfurt
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true         # 推代码到 main 分支自动重新部署
+    envVars:
+      # node:sqlite 是实验性特性，Node 22.5+ 才有。
+      # 这里锁 22 的较新版本，别让 Render 用 18/20 跑。
+      - key: NODE_VERSION
+        value: "22.11.0"
+
+      # 让 config.js 判定为"线上环境"，自动收紧 CORS
+      - key: NODE_ENV
+        value: production
+
+      # JWT 密钥：generateValue=true 让 Render 自动生成一个随机值。
+      # 比手动填更安全 —— 它不会出现在代码或 log 里，只存在 Render 的环境变量面板。
+      # ⚠️ 注意：重新生成这个值会让所有已登录用户掉线（旧 token 验签失败）。
+      #    这是预期行为，不是 bug。
+      - key: JWT_SECRET
+        generateValue: true
+
+      # CORS 白名单。Render 会分配 https://<服务名>.onrender.com 这个域名，
+      # 部署完成后把真实域名填进来（或用自定义域名）。
+      # 留空也能跑（代码会警告但放行），填上更规范。
+      - key: ALLOWED_ORIGINS
+        sync: false          # sync:false 表示"不写在蓝图里，去面板手动填"，避免把域名写死在仓库
+
+      # 数据库路径。free 套餐没有持久卷，保持默认（项目根目录）即可。
+      # 如果升级了付费套餐并挂了盘，把这里改成盘的挂载点，例如 /data/chat.db
+      - key: DB_PATH
+        value: ./chat.db
+
+# ============================================================
+# 【参考】付费实例 + 持久卷的写法（free 套餐用不了）
+#
+# services:
+#   - type: web
+#     name: chat-app
+#     runtime: node
+#     plan: starter
+#     region: singapore
+#     branch: main
+#     buildCommand: npm install
+#     startCommand: npm start
+#     healthCheckPath: /api/health
+#     envVars:
+#       - key: NODE_ENV
+#         value: production
+#       - key: JWT_SECRET
+#         generateValue: true
+#       - key: DB_PATH
+#         value: /data/chat.db        # ← 指到卷里
+#     disk:
+#       name: chat-data
+#       mountPath: /data              # ← 卷挂到 /data
+#       sizeGB: 1
+# ============================================================

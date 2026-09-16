@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>注册 · 实时聊天室</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="auth-page">
+
+  <div class="auth-card">
+    <img class="auth-logo" src="/img/logo.png" alt="聊天室 Logo" width="52" height="52">
+    <h1 class="auth-title">创建账号</h1>
+    <p class="auth-subtitle">注册后即可开始聊天</p>
+
+    <div class="alert alert-error" id="alertBox"></div>
+
+    <form id="registerForm" novalidate>
+      <div class="field">
+        <label for="username">用户名</label>
+        <input
+          class="input"
+          type="text"
+          id="username"
+          name="username"
+          placeholder="3-20 个字符，可用中文"
+          autocomplete="username"
+          required
+        >
+      </div>
+
+      <div class="field">
+        <label for="password">密码</label>
+        <input
+          class="input"
+          type="password"
+          id="password"
+          name="password"
+          placeholder="至少 6 位"
+          autocomplete="new-password"
+          required
+        >
+      </div>
+
+      <div class="field">
+        <label for="password2">确认密码</label>
+        <input
+          class="input"
+          type="password"
+          id="password2"
+          name="password2"
+          placeholder="再输一次密码"
+          autocomplete="new-password"
+          required
+        >
+      </div>
+
+      <button class="btn btn-primary btn-block" type="submit" id="submitBtn">
+        注册
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      已有账号？<a href="/login.html">去登录</a>
+    </p>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    AuthPage.initRegisterForm();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,873 @@
+/* ============================================================
+ * style.css —— 聊天室全局样式
+ *
+ * 组织方式：
+ *   1. 设计变量（CSS 自定义属性）—— 配色、圆角、阴影都从这里改
+ *   2. 基础重置
+ *   3. 通用组件（按钮、输入框、卡片、提示）
+ *   4. 登录/注册页
+ *   5. 聊天页（三栏布局 + 消息气泡）
+ *   6. 移动端适配
+ * ============================================================ */
+
+/* ---------- 1. 设计变量 ---------- */
+:root {
+  /* 主色：一个偏冷的蓝，聊天软件常用 */
+  --brand: #4f6ef7;
+  --brand-dark: #4058d4;
+  --brand-light: #eef1fe;
+
+  /* 中性色 */
+  --bg: #f4f5f9;
+  --surface: #ffffff;
+  --surface-2: #fafbfd;
+  --border: #e5e7ef;
+  --text: #1f2333;
+  --text-2: #6b7280;
+  --text-3: #9ca3af;
+
+  /* 状态色 */
+  --success: #16a34a;
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+  --online: #22c55e;
+
+  /* 尺寸 */
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 18px;
+  --shadow-sm: 0 1px 2px rgba(31, 35, 51, 0.06);
+  --shadow: 0 4px 16px rgba(31, 35, 51, 0.08);
+  --shadow-lg: 0 12px 40px rgba(31, 35, 51, 0.12);
+
+  /* 布局 */
+  --sidebar-w: 200px;
+  --online-w: 190px;
+  --header-h: 56px;
+}
+
+/* ---------- 2. 基础重置 ---------- */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', 'PingFang SC',
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+a {
+  color: var(--brand);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* 隐藏滚动条但保留滚动能力（消息区用） */
+.scroll-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: #d4d7e0;
+  border-radius: 3px;
+}
+.scroll-thin::-webkit-scrollbar-thumb:hover {
+  background: #b9bdc9;
+}
+
+/* ---------- 3. 通用组件 ---------- */
+
+/* 按钮 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 20px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  transition: background 0.15s, transform 0.05s, opacity 0.15s;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--brand);
+  color: #fff;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--brand-dark);
+}
+.btn-primary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* 输入框 */
+.field {
+  margin-bottom: 16px;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.input {
+  width: 100%;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-light);
+}
+
+.input::placeholder {
+  color: var(--text-3);
+}
+
+/* 提示条 */
+.alert {
+  display: none;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.alert.show {
+  display: block;
+}
+
+.alert-error {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid #fecaca;
+}
+
+.alert-success {
+  background: #f0fdf4;
+  color: var(--success);
+  border: 1px solid #bbf7d0;
+}
+
+/* 加载中转圈 */
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- 4. 登录 / 注册页 ---------- */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  /* 背景加一点柔和的光晕，避免大片死白 */
+  background:
+    radial-gradient(circle at 20% 20%, #e8ecff 0%, transparent 45%),
+    radial-gradient(circle at 80% 80%, #e6f7ff 0%, transparent 45%),
+    var(--bg);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  padding: 36px 32px 32px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+/* 品牌 Logo：图片版。
+   之前是 emoji 用的渐变方块，现在图片自带白底圆角 A 字，
+   所以去掉渐变背景和发光，改用轻微阴影 + 圆角贴合卡片。 */
+.auth-logo {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 16px;
+  display: block;
+  border-radius: 16px;
+  object-fit: contain;
+  box-shadow: 0 6px 18px rgba(31, 36, 48, 0.14);
+  /* 图片本身是白底，深色模式下加一圈描边避免糊在背景里 */
+  outline: 1px solid rgba(31, 36, 48, 0.06);
+}
+
+.auth-title {
+  text-align: center;
+  font-size: 21px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.auth-subtitle {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 26px;
+}
+
+.auth-footer {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+/* ---------- 5. 聊天页 ---------- */
+.chat-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 顶栏 */
+.chat-header {
+  height: var(--header-h);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  z-index: 10;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.brand-icon {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--brand) 0%, #7c8cf8 100%);
+  font-size: 15px;
+}
+
+/* 顶栏的品牌图标现在是图片（之前是 emoji 放在渐变方块里）。
+   图片自带白底，所以去掉渐变背景，改成圆角 + 淡描边贴合顶栏。 */
+img.brand-icon {
+  background: none;
+  object-fit: contain;
+  outline: 1px solid rgba(31, 35, 51, 0.06);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 连接状态小圆点 */
+.conn-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.conn-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--online);
+  transition: background 0.2s;
+}
+
+.conn-status.offline .conn-dot {
+  background: #d1d5db;
+}
+
+.conn-status.offline {
+  color: var(--danger);
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 5px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+  background: var(--brand);
+}
+
+/* 主体：三栏 */
+.chat-body {
+  flex: 1;
+  display: flex;
+  min-height: 0; /* 关键：让子元素的 overflow 生效 */
+}
+
+/* 左侧：房间列表 */
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: var(--surface-2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-title {
+  padding: 14px 16px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.room-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 8px 8px;
+}
+
+.room-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  margin-bottom: 2px;
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: 14px;
+  text-align: left;
+  transition: background 0.12s, color 0.12s;
+}
+
+.room-item:hover {
+  background: #eef0f6;
+}
+
+.room-item.active {
+  background: var(--brand);
+  color: #fff;
+  font-weight: 500;
+}
+
+.room-item .hash {
+  opacity: 0.6;
+  font-weight: 500;
+}
+
+/* 中间：消息区 */
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+
+.room-header {
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.room-header .count {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-3);
+  margin-left: 4px;
+}
+
+/* 房间标题里的 # 号。房间列表项里的 .hash 有单独的规则（见上），
+   这里给标题栏也补一条，两处视觉一致。 */
+.room-header .hash {
+  color: var(--text-3);
+  font-weight: 500;
+}
+
+/* 房间成员数（如「3 人在线」）的小字提示 */
+.room-header .count:empty {
+  display: none;
+}
+
+/* 消息滚动区 */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* 单条消息 */
+.msg {
+  display: flex;
+  gap: 10px;
+  max-width: 76%;
+  align-self: flex-start;
+}
+
+/* 自己的消息：靠右 + 反向排列 */
+.msg.self {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.msg-body {
+  min-width: 0;
+}
+
+.msg-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.msg.self .msg-meta {
+  flex-direction: row-reverse;
+}
+
+.msg-name {
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.msg-bubble {
+  padding: 9px 13px;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  /* 关键：让长文本、长单词、URL 自动换行，不撑破布局 */
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.msg.self .msg-bubble {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+  border-top-right-radius: 4px;
+}
+
+.msg:not(.self) .msg-bubble {
+  border-top-left-radius: 4px;
+}
+
+/* 系统消息（居中、灰色小字） */
+.msg-system {
+  align-self: center;
+  max-width: 90%;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: #f1f2f7;
+  color: var(--text-3);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* 空状态 */
+.empty-state {
+  margin: auto;
+  text-align: center;
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+.empty-state .icon {
+  font-size: 34px;
+  display: block;
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+/* 底部输入区 */
+.composer {
+  flex-shrink: 0;
+  padding: 12px 16px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.composer-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.composer textarea {
+  flex: 1;
+  min-height: 42px;
+  max-height: 120px;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  outline: none;
+  resize: none;
+  line-height: 1.5;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.composer textarea:focus {
+  background: var(--surface);
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-light);
+}
+
+.composer .send-btn {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  font-size: 17px;
+}
+
+.composer-hint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-3);
+  height: 14px;
+}
+
+.composer-hint.warn {
+  color: var(--danger);
+}
+
+/* 右侧：在线用户 */
+.online-panel {
+  width: var(--online-w);
+  flex-shrink: 0;
+  background: var(--surface-2);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.online-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 8px 8px;
+}
+
+.online-user {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 13px;
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.online-user:hover {
+  background: #eef0f6;
+}
+
+.online-user .name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.online-user .self-tag {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+/* 在线小绿点叠在头像右下角 */
+.avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.avatar-wrap .dot {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--online);
+  border: 2px solid var(--surface-2);
+}
+
+/* ---------- 私聊弹窗 ---------- */
+.modal-mask {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(31, 35, 51, 0.4);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-mask.show {
+  display: flex;
+}
+
+.modal {
+  width: 100%;
+  max-width: 420px;
+  height: 520px;
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.modal-header {
+  height: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 600;
+}
+
+.modal-close {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: var(--text-3);
+  font-size: 19px;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.modal .messages {
+  padding: 14px;
+}
+
+.modal .composer {
+  padding: 10px 12px 12px;
+}
+
+/* 侧栏切换按钮（移动端用，桌面隐藏） */
+.sidebar-toggle {
+  display: none;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 17px;
+  color: var(--text-2);
+}
+
+.sidebar-toggle:hover {
+  background: var(--surface-2);
+}
+
+/* ---------- 6. 移动端适配（< 768px） ---------- */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-w: 100%;
+    --online-w: 100%;
+  }
+
+  .sidebar-toggle {
+    display: flex;
+  }
+
+  /* 三栏变单栏：侧栏和在线面板改成抽屉，默认藏起来 */
+  .sidebar,
+  .online-panel {
+    position: fixed;
+    top: var(--header-h);
+    bottom: 0;
+    z-index: 50;
+    width: 78%;
+    max-width: 280px;
+    box-shadow: var(--shadow-lg);
+    transition: transform 0.22s ease;
+  }
+
+  .sidebar {
+    left: 0;
+    transform: translateX(-100%);
+  }
+
+  .online-panel {
+    right: 0;
+    transform: translateX(100%);
+  }
+
+  .sidebar.open,
+  .online-panel.open {
+    transform: translateX(0);
+  }
+
+  /* 抽屉打开时的遮罩 */
+  .drawer-mask {
+    display: none;
+    position: fixed;
+    inset: var(--header-h) 0 0 0;
+    background: rgba(31, 35, 51, 0.35);
+    z-index: 40;
+  }
+
+  .drawer-mask.show {
+    display: block;
+  }
+
+  .msg {
+    max-width: 88%;
+  }
+
+  .brand .brand-text {
+    display: none;
+  }
+
+  .user-chip .chip-name {
+    display: none;
+  }
+
+  .user-chip {
+    padding: 5px;
+  }
+
+  /* 输入区避开 iPhone 底部横条 */
+  .composer {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* 移动端 input 字号小于 16px 会触发 iOS 自动缩放，这里强制 16px */
+  .composer textarea,
+  .input {
+    font-size: 16px;
+  }
+}

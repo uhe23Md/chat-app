@@ -1,0 +1,37 @@
+{
+  "name": "chat-app",
+  "version": "1.0.0",
+  "description": "带登录鉴权的多房间实时聊天室（Express + Socket.IO + SQLite）",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js",
+    "test:auth": "node test-auth.js",
+    "test:socket": "node test-socket.js",
+    "test": "node test-auth.js && node test-socket.js",
+    "clean:test": "node test-cleanup.js"
+  },
+  "keywords": [
+    "chat",
+    "socket.io",
+    "express",
+    "sqlite"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9",
+    "socket.io-client": "^4.8.3"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}

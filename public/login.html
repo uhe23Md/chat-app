@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 · 实时聊天室</title>
+  <link rel="icon" type="image/png" href="/img/logo.png">
+  <link rel="apple-touch-icon" href="/img/logo.png">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="auth-page">
+
+  <div class="auth-card">
+    <img class="auth-logo" src="/img/logo.png" alt="聊天室 Logo" width="52" height="52">
+    <h1 class="auth-title">欢迎回来</h1>
+    <p class="auth-subtitle">登录后进入聊天大厅</p>
+
+    <!-- 错误提示条，默认隐藏，出错时用 .show 显示 -->
+    <div class="alert alert-error" id="alertBox"></div>
+
+    <form id="loginForm" novalidate>
+      <div class="field">
+        <label for="username">用户名</label>
+        <input
+          class="input"
+          type="text"
+          id="username"
+          name="username"
+          placeholder="请输入用户名"
+          autocomplete="username"
+          required
+        >
+      </div>
+
+      <div class="field">
+        <label for="password">密码</label>
+        <input
+          class="input"
+          type="password"
+          id="password"
+          name="password"
+          placeholder="请输入密码"
+          autocomplete="current-password"
+          required
+        >
+      </div>
+
+      <button class="btn btn-primary btn-block" type="submit" id="submitBtn">
+        登录
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      还没有账号？<a href="/register.html">立即注册</a>
+    </p>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    // 页面脚本：把登录表单接到 API 上
+    AuthPage.initLoginForm();
+  </script>
+
+</body>
+</html>
